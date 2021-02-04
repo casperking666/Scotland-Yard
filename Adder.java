@@ -10,6 +10,10 @@ class Adder {
         sum += summand;
     }
 
+    void minus(int operand) {
+        sum -= operand;
+    }
+
     void multiple(int operand) {
         sum *= operand;
     }
