@@ -163,7 +163,7 @@ public class GameStateCreationTest extends ParameterisedModelTestBase {
 		assertThat(state.getPlayers()).containsExactlyInAnyOrder(MRX, RED, GREEN, BLUE);
 	}
 
-	@Test public void testWinningPlayerIsEmptyInitially() {
+	@Test public void testWinningPlayerIsEmptyInitially() { /***/
 		GameState state = gameStateFactory.build(standard24RoundSetup(),
 				blackPlayer(),
 				redPlayer(),

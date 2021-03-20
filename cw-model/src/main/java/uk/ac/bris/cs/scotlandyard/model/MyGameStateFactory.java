@@ -78,6 +78,7 @@ public final class MyGameStateFactory implements Factory<GameState> {
 		@Nonnull
 		@Override
 		public ImmutableSet<Piece> getWinner() {
+			this.winner = ImmutableSet.of();
 			return this.winner;
 		}
 
