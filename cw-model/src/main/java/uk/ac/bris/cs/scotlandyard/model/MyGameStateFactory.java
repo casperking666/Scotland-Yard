@@ -25,7 +25,7 @@ public final class MyGameStateFactory implements Factory<GameState> {
 		private ImmutableList<Player> everyone;
 		private ImmutableSet<Move> moves;
 		private ImmutableSet<Piece> winner;
-		private Set<Piece> people;
+		private Set<Piece> people; // i created it
 
 		private MyGameState(
 				final GameSetup setup,
