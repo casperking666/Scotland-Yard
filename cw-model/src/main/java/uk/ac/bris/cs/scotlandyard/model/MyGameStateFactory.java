@@ -59,6 +59,9 @@ public final class MyGameStateFactory implements Factory<GameState> {
 		@Nonnull
 		@Override
 		public Optional<Integer> getDetectiveLocation(Detective detective) {
+			for(int i = 0; i < detectives.size(); i++) {
+				if(detectives.get(i).piece().webColour().equals(detective.webColour())) return Optional.of(detectives.get(i).location());
+			}
 			return Optional.empty();
 		}
 
@@ -66,6 +69,29 @@ public final class MyGameStateFactory implements Factory<GameState> {
 		@Override
 
 		public Optional<TicketBoard> getPlayerTickets(Piece piece) {
+
+			if(mrX.piece().equals(piece)) {
+				TicketBoard result = new TicketBoard(){
+					@Override
+					public int getCount(Ticket ticket) {
+						return mrX.tickets().getOrDefault(ticket, 0);
+					}
+				};
+				return Optional.of(result);
+			}
+
+			for(Player rst : detectives) {
+				if(rst.piece().equals(piece)) {
+					TicketBoard result = new TicketBoard(){
+						@Override
+						public int getCount(Ticket ticket) {
+							return rst.tickets().getOrDefault(ticket, 0);
+						}
+					};
+					return Optional.of(result);
+				}
+			}
+
 			return Optional.empty();
 		}
 
