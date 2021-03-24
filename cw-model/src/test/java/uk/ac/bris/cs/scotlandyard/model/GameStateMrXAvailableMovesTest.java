@@ -60,7 +60,7 @@ public class GameStateMrXAvailableMovesTest extends ParameterisedModelTestBase {
 				x2(MRX, 104, SECRET, 86, SECRET, 104));
 	}
 
-	@Test public void testMrXMovesOmittedIfDestinationOccupiedByDetectives() {
+	@Test public void testMrXMovesOmittedIfDestinationOccupiedByDetectives() { /***/
 		var mrX = new Player(MRX, makeTickets(4, 3, 3, 0, 5), 104);
 		var blue = new Player(BLUE, defaultDetectiveTickets(), 116);
 
@@ -115,7 +115,7 @@ public class GameStateMrXAvailableMovesTest extends ParameterisedModelTestBase {
 				x2(MRX, 104, TAXI, 116, BUS, 142));
 	}
 
-	@Test public void testMrXNoDoubleMovesIfNoDoubleMoveTickets() {
+	@Test public void testMrXNoDoubleMovesIfNoDoubleMoveTickets() { /***/
 		var mrX = new Player(MRX, makeTickets(4, 3, 3, 0, 5), 104);
 		var blue = new Player(BLUE, defaultDetectiveTickets(), 117);
 
@@ -129,7 +129,7 @@ public class GameStateMrXAvailableMovesTest extends ParameterisedModelTestBase {
 				secret(MRX, 104, 116));
 	}
 
-	@Test public void testMrXNoDoubleMovesIfNotEnoughRoundLeft() {
+	@Test public void testMrXNoDoubleMovesIfNotEnoughRoundLeft() { /***/
 		var mrX = new Player(MRX, makeTickets(4, 3, 3, 2, 5), 104);
 		var blue = new Player(BLUE, defaultDetectiveTickets(), 117);
 
@@ -145,7 +145,7 @@ public class GameStateMrXAvailableMovesTest extends ParameterisedModelTestBase {
 				secret(MRX, 104, 116));
 	}
 
-	@Test public void testMrXNoTicketMovesIfNoTicketMoveTickets() {
+	@Test public void testMrXNoTicketMovesIfNoTicketMoveTickets() { /***/
 		var mrX = new Player(MRX, makeTickets(1, 0, 1, 0, 0), 104);
 		var blue = new Player(BLUE, defaultDetectiveTickets(), 117);
 
@@ -159,7 +159,7 @@ public class GameStateMrXAvailableMovesTest extends ParameterisedModelTestBase {
 				taxi(MRX, 104, 116));
 	}
 
-	@Test public void testMrXOnlySecretMovesIfOnlySecretMoveTicketsLeft() {
+	@Test public void testMrXOnlySecretMovesIfOnlySecretMoveTicketsLeft() { /***/
 		var mrX = new Player(MRX, makeTickets(0, 0, 0, 0, 1), 104);
 		var blue = new Player(BLUE, defaultDetectiveTickets(), 117);
 

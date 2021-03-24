@@ -59,9 +59,12 @@ public final class MyGameStateFactory implements Factory<GameState> {
 		@Nonnull
 		@Override
 		public Optional<Integer> getDetectiveLocation(Detective detective) {
+<<<<<<< HEAD
 			for(int i = 0; i < detectives.size(); i++) {
 				if(detectives.get(i).piece().webColour().equals(detective.webColour())) return Optional.of(detectives.get(i).location());
 			}
+=======
+>>>>>>> origin/Casper
 			return Optional.empty();
 		}
 
@@ -69,6 +72,7 @@ public final class MyGameStateFactory implements Factory<GameState> {
 		@Override
 
 		public Optional<TicketBoard> getPlayerTickets(Piece piece) {
+<<<<<<< HEAD
 
 			if(mrX.piece().equals(piece)) {
 				TicketBoard result = new TicketBoard(){
@@ -92,6 +96,8 @@ public final class MyGameStateFactory implements Factory<GameState> {
 				}
 			}
 
+=======
+>>>>>>> origin/Casper
 			return Optional.empty();
 		}
 
@@ -111,12 +117,58 @@ public final class MyGameStateFactory implements Factory<GameState> {
 		@Nonnull
 		@Override
 		public ImmutableSet<Move> getAvailableMoves() {
+<<<<<<< HEAD
 			return null;
+=======
+			moves = ImmutableSet.copyOf(makeSingleMoves(setup, detectives, mrX, mrX.location()));
+			return moves;
+>>>>>>> origin/Casper
 		}
 
 		@Override public GameState advance(Move move) {  return null;  }
 	}
 
+<<<<<<< HEAD
+=======
+	private static ImmutableSet<SingleMove> makeSingleMoves(
+			GameSetup setup,
+			List<Player> detectives,
+			Player player,
+			int source) {
+		final var singleMoves = new ArrayList<SingleMove>();
+		for (int destination : setup.graph.adjacentNodes(source)) {
+			boolean isAvailable = true;
+			for (Player detective : detectives) {
+				if (destination == detective.location()) {
+					isAvailable = false;
+				}
+			}
+			if (isAvailable)
+				for (Transport t : setup.graph.edgeValueOrDefault(source, destination, ImmutableSet.of())) {
+					if (player.has(t.requiredTicket())) {
+						SingleMove singleMove = new SingleMove(player.piece(), source, t.requiredTicket(), destination);
+						singleMoves.add(singleMove);
+					}
+					if (player.has(Ticket.SECRET)) {
+						SingleMove singleMove = new SingleMove(player.piece(), source, Ticket.SECRET, destination);
+						singleMoves.add(singleMove);
+					}
+				}
+		}
+		return ImmutableSet.copyOf(singleMoves);
+	}
+
+	private static ImmutableSet<DoubleMove> makeDoubleMoves(
+			GameState setup,
+			List<Player> detectives,
+			Player player,
+			int source) {
+		final var doubleMoves = new ArrayList<DoubleMove>();
+		return ImmutableSet.copyOf(doubleMoves);
+	}
+
+
+>>>>>>> origin/Casper
 	@Nonnull @Override public GameState build(
 			GameSetup setup,
 			Player mrX,
