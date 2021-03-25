@@ -69,7 +69,6 @@ public final class MyGameStateFactory implements Factory<GameState> {
 		@Override
 
 		public Optional<TicketBoard> getPlayerTickets(Piece piece) {
-
 			if(mrX.piece().equals(piece)) {
 				TicketBoard result = new TicketBoard(){
 					@Override
