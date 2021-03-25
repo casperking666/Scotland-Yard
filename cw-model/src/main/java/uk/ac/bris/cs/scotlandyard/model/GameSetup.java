@@ -25,11 +25,14 @@ public final class GameSetup implements Serializable {
 	 * MrX reveal rounds; false is hidden, true is reveal
 	 */
 	public final ImmutableList<Boolean> rounds;
+
+	//Constructor
 	public GameSetup(@Nonnull ImmutableValueGraph<Integer, ImmutableSet<Transport>> graph,
 	                 @Nonnull ImmutableList<Boolean> rounds) {
 		this.graph = Objects.requireNonNull(graph);
 		this.rounds = Objects.requireNonNull(rounds);
 	}
+
 	@Override public boolean equals(Object o) {
 		if (this == o) return true;
 		if (o == null || getClass() != o.getClass()) return false;
