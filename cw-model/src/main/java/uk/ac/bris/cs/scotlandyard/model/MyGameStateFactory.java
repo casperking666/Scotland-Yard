@@ -59,12 +59,9 @@ public final class MyGameStateFactory implements Factory<GameState> {
 		@Nonnull
 		@Override
 		public Optional<Integer> getDetectiveLocation(Detective detective) {
-<<<<<<< HEAD
 			for(int i = 0; i < detectives.size(); i++) {
 				if(detectives.get(i).piece().webColour().equals(detective.webColour())) return Optional.of(detectives.get(i).location());
 			}
-=======
->>>>>>> origin/Casper
 			return Optional.empty();
 		}
 
@@ -72,7 +69,6 @@ public final class MyGameStateFactory implements Factory<GameState> {
 		@Override
 
 		public Optional<TicketBoard> getPlayerTickets(Piece piece) {
-<<<<<<< HEAD
 
 			if(mrX.piece().equals(piece)) {
 				TicketBoard result = new TicketBoard(){
@@ -95,9 +91,6 @@ public final class MyGameStateFactory implements Factory<GameState> {
 					return Optional.of(result);
 				}
 			}
-
-=======
->>>>>>> origin/Casper
 			return Optional.empty();
 		}
 
@@ -117,19 +110,14 @@ public final class MyGameStateFactory implements Factory<GameState> {
 		@Nonnull
 		@Override
 		public ImmutableSet<Move> getAvailableMoves() {
-<<<<<<< HEAD
-			return null;
-=======
 			moves = ImmutableSet.copyOf(makeSingleMoves(setup, detectives, mrX, mrX.location()));
 			return moves;
->>>>>>> origin/Casper
 		}
 
 		@Override public GameState advance(Move move) {  return null;  }
 	}
 
-<<<<<<< HEAD
-=======
+
 	private static ImmutableSet<SingleMove> makeSingleMoves(
 			GameSetup setup,
 			List<Player> detectives,
@@ -168,13 +156,15 @@ public final class MyGameStateFactory implements Factory<GameState> {
 	}
 
 
->>>>>>> origin/Casper
 	@Nonnull @Override public GameState build(
 			GameSetup setup,
 			Player mrX,
 			ImmutableList<Player> detectives) {
 		if (setup == null || mrX == null || detectives == null) { throw new NullPointerException(); }
 		if (!mrX.isMrX()) { throw new IllegalArgumentException(); }
+		for(int i = 0; i < detectives.size(); i++) {
+			if(detectives.get(i).piece().isMrX() && mrX.isDetective()) throw new IllegalArgumentException("Swapped!");
+		}
 		for (Player player : detectives)
 			if (!player.isDetective())
 				throw new IllegalArgumentException();
