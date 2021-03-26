@@ -109,7 +109,10 @@ public final class MyGameStateFactory implements Factory<GameState> {
 		@Nonnull
 		@Override
 		public ImmutableSet<Move> getAvailableMoves() {
-			moves = ImmutableSet.copyOf(makeSingleMoves(setup, detectives, mrX, mrX.location()));
+			ArrayList<Move> container = new ArrayList<>();
+			container.addAll(makeDoubleMoves(setup, detectives, mrX, mrX.location()).asList());
+			container.addAll(makeSingleMoves(setup, detectives, mrX, mrX.location()).asList());
+			moves = ImmutableSet.copyOf(container);
 			return moves;
 		}
 
@@ -145,12 +148,34 @@ public final class MyGameStateFactory implements Factory<GameState> {
 		return ImmutableSet.copyOf(singleMoves);
 	}
 
+	// TODO fix the bug with the nested for loops, and make conditions on if have the ticket or not
+
 	private static ImmutableSet<DoubleMove> makeDoubleMoves(
-			GameState setup,
+			GameSetup setup,
 			List<Player> detectives,
 			Player player,
 			int source) {
 		final var doubleMoves = new ArrayList<DoubleMove>();
+		if (!player.has(Ticket.DOUBLE)) return ImmutableSet.of();
+		ImmutableSet<SingleMove> singleMoves = makeSingleMoves(setup, detectives, player, source);
+		// Set<SingleMove> secondMoves = new HashSet<>();
+		// Set<SingleMove> secondMoves = ImmutableSet.of();
+		// List<SingleMove> secondMoves = new ArrayList<>();
+		for (SingleMove singleMove : singleMoves) {
+			List<SingleMove> secondMoves = new ArrayList<>(); // simple tweak changes everything, the underlined philosophy is very different
+			secondMoves.addAll(makeSingleMoves(setup, detectives, player.use(singleMove.ticket), singleMove.destination).asList());
+			for (SingleMove secondMove : secondMoves) {
+				DoubleMove doubleMove = new DoubleMove(
+						singleMove.commencedBy(),
+						singleMove.source(),
+						singleMove.ticket,
+						singleMove.destination,
+						secondMove.tickets().iterator().next(),
+						secondMove.destination
+				);
+				doubleMoves.add(doubleMove);
+			}
+		}
 		return ImmutableSet.copyOf(doubleMoves);
 	}
 
