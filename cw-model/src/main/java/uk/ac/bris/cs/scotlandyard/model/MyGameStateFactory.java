@@ -110,8 +110,10 @@ public final class MyGameStateFactory implements Factory<GameState> {
 		@Override
 		public ImmutableSet<Move> getAvailableMoves() {
 			ArrayList<Move> container = new ArrayList<>();
-			container.addAll(makeDoubleMoves(setup, detectives, mrX, mrX.location()).asList());
-			container.addAll(makeSingleMoves(setup, detectives, mrX, mrX.location()).asList());
+			container.addAll(makeDoubleMoves(setup, detectives, mrX, mrX.location()));
+			container.addAll(makeSingleMoves(setup, detectives, mrX, mrX.location()));
+			// for (Player detective : detectives)
+			//	container.addAll(makeSingleMoves(setup, detectives, detective, detective.location()));
 			moves = ImmutableSet.copyOf(container);
 			return moves;
 		}
@@ -148,7 +150,6 @@ public final class MyGameStateFactory implements Factory<GameState> {
 		return ImmutableSet.copyOf(singleMoves);
 	}
 
-	// TODO fix the bug with the nested for loops, and make conditions on if have the ticket or not
 
 	private static ImmutableSet<DoubleMove> makeDoubleMoves(
 			GameSetup setup,
@@ -157,20 +158,18 @@ public final class MyGameStateFactory implements Factory<GameState> {
 			int source) {
 		final var doubleMoves = new ArrayList<DoubleMove>();
 		if (!player.has(Ticket.DOUBLE)) return ImmutableSet.of();
+		// if (setup.rounds.get()); have to have a round number here
 		ImmutableSet<SingleMove> singleMoves = makeSingleMoves(setup, detectives, player, source);
-		// Set<SingleMove> secondMoves = new HashSet<>();
-		// Set<SingleMove> secondMoves = ImmutableSet.of();
-		// List<SingleMove> secondMoves = new ArrayList<>();
 		for (SingleMove singleMove : singleMoves) {
-			List<SingleMove> secondMoves = new ArrayList<>(); // simple tweak changes everything, the underlined philosophy is very different
-			secondMoves.addAll(makeSingleMoves(setup, detectives, player.use(singleMove.ticket), singleMove.destination).asList());
+			Set<SingleMove> secondMoves = new HashSet<>();
+			secondMoves.addAll(makeSingleMoves(setup, detectives, player.use(singleMove.ticket), singleMove.destination));
 			for (SingleMove secondMove : secondMoves) {
 				DoubleMove doubleMove = new DoubleMove(
 						singleMove.commencedBy(),
 						singleMove.source(),
 						singleMove.ticket,
 						singleMove.destination,
-						secondMove.tickets().iterator().next(),
+						secondMove.tickets().iterator().next(), //  haven't revise on this yet
 						secondMove.destination
 				);
 				doubleMoves.add(doubleMove);
