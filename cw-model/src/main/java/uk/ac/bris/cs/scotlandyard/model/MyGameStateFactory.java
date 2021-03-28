@@ -47,13 +47,22 @@ public final class MyGameStateFactory implements Factory<GameState> {
 		}
 
 		@Override
-		public ImmutableSet<Piece> getPlayers() { // I have no idea what I am doing but I get it.
-			this.people = new HashSet<>();
+		public ImmutableSet<Piece> getPlayers() {
+			/* this.people = new HashSet<>();
 			for (Player person : detectives)
 				this.people.add(person.piece());
 			this.people.add(mrX.piece());
 			ImmutableSet<Piece> people = ImmutableSet.copyOf(this.people);
-			return people;
+			return people;*/
+			ArrayList<Player> everyone = new ArrayList<>();
+			for (Player detective : detectives)
+				everyone.add(detective);
+			everyone.add(mrX);
+			this.everyone = ImmutableList.copyOf(everyone);
+			Set<Piece> people = new HashSet<>();
+			for (Player person : everyone)
+				people.add(person.piece());
+			return ImmutableSet.copyOf(people);
 		}
 
 		@Nonnull
