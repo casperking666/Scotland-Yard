@@ -26,6 +26,11 @@ public final class MyGameStateFactory implements Factory<GameState> {
 		private ImmutableSet<Move> moves;
 		private ImmutableSet<Piece> winner;
 		private Set<Piece> people; // i created it
+		int cnt = 1;// by Eric
+
+
+		ImmutableList<Boolean> rounds = ImmutableList.of(false, false, true, false, false, false, false, true,
+				false, false, false, false, true, false, false, false, false, true, false, false, false, false, false, true);
 
 		private MyGameState(
 				final GameSetup setup,
@@ -105,7 +110,7 @@ public final class MyGameStateFactory implements Factory<GameState> {
 		@Nonnull
 		@Override
 		public ImmutableList<LogEntry> getMrXTravelLog() {
-			return this.log;
+			return log;
 		}
 
 		@Nonnull
@@ -119,7 +124,7 @@ public final class MyGameStateFactory implements Factory<GameState> {
 		@Override
 		public ImmutableSet<Move> getAvailableMoves() {
 			ArrayList<Move> container = new ArrayList<>();
-			container.addAll(makeDoubleMoves(setup, detectives, mrX, mrX.location()));
+			if(cnt!=23)container.addAll(makeDoubleMoves(setup, detectives, mrX, mrX.location()));
 			container.addAll(makeSingleMoves(setup, detectives, mrX, mrX.location()));
 			// for (Player detective : detectives)
 			//	container.addAll(makeSingleMoves(setup, detectives, detective, detective.location()));
@@ -127,7 +132,43 @@ public final class MyGameStateFactory implements Factory<GameState> {
 			return moves;
 		}
 
-		@Override public GameState advance(Move move) {  return null;  }
+		//test
+		public void smsm(Boolean bl){bl = !bl;}
+
+		@Override public GameState advance(Move move) {
+			if(!moves.contains(move)) throw new IllegalArgumentException("Illegal move: "+move);
+
+
+			//Need to return for the Constructor
+			//	final GameSetup setup,
+			//	final ImmutableSet<Piece> remaining,
+			//	Finished! final ImmutableList<LogEntry> log,
+			//	final Player mrX,
+			//	final List<Player> detectives)
+
+
+			//
+
+			// Travel Log
+			if(move.commencedBy().isMrX()){
+				var aLog = new ArrayList<LogEntry>();
+				aLog.addAll(this.log);
+				if(ScotlandYard.REVEAL_ROUND.contains(cnt)){
+					aLog.add(LogEntry.hidden(move.tickets().iterator().next()));
+				}
+				else if(!ScotlandYard.REVEAL_ROUND.contains(cnt)){
+					aLog.add(LogEntry.reveal(move.tickets().iterator().next(), mrX.location()));
+				}
+				cnt++;
+				this.log = ImmutableList.copyOf(aLog);
+			}
+			//Travel Log ends
+
+
+
+
+
+			return null; }
 	}
 
 

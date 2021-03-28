@@ -35,7 +35,7 @@ public final class LogEntry implements Serializable {
 		if (location == HIDDEN) throw new IllegalArgumentException();
 		return new LogEntry(ticket, location);
 	}
-	private LogEntry(@Nonnull Ticket ticket, int location) {
+	LogEntry(@Nonnull Ticket ticket, int location) {
 		this.ticket = Objects.requireNonNull(ticket);
 		this.location = location;
 	}
