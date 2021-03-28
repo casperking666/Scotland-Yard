@@ -26,6 +26,7 @@ public final class MyGameStateFactory implements Factory<GameState> {
 		private ImmutableSet<Move> moves;
 		private ImmutableSet<Piece> winner;
 		private Set<Piece> people; // i created it
+		int cnt = 0;
 
 		ImmutableList<Boolean> rounds = ImmutableList.of(false, false, true, false, false, false, false, true,
 				false, false, false, false, true, false, false, false, false, true, false, false, false, false, false, true);
@@ -99,19 +100,15 @@ public final class MyGameStateFactory implements Factory<GameState> {
 		@Nonnull
 		@Override
 		public ImmutableList<LogEntry> getMrXTravelLog() {
-			List<LogEntry> iLog = new ArrayList<>();
-			for(Boolean rh : rounds){
-				if(!rh){
-					LogEntry result = new LogEntry.hidden(mrX.);//processing...
-				}
-			}
+			return log;
 		}
 
 		@Nonnull
 		@Override
 		public ImmutableSet<Piece> getWinner() {
-			this.winner = ImmutableSet.of();
-			return this.winner;
+			//this.winner = ImmutableSet.of();
+			//return this.winner;
+			if()
 		}
 
 		@Nonnull
@@ -123,6 +120,21 @@ public final class MyGameStateFactory implements Factory<GameState> {
 
 		@Override public GameState advance(Move move) {
 			if(!moves.contains(move)) throw new IllegalArgumentException("Illegal move: "+move);
+
+			//	final GameSetup setup,
+			//	final ImmutableSet<Piece> remaining,
+			//	final ImmutableList<LogEntry> log,
+			//	final Player mrX,
+			//	final List<Player> detectives)
+			List<LogEntry> iLog = new ArrayList<>();
+			iLog = log;
+			if(rounds.get(cnt).equals(false)) {
+				LogEntry result = new LogEntry(move.tickets().iterator().next(), -1);
+
+			}
+			else if(rounds.get(cnt).equals(true)) {
+				LogEntry result = new LogEntry(move.tickets().iterator().next(), move.source());
+			}
 
 			return null; }
 	}
