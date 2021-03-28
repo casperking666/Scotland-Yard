@@ -26,7 +26,8 @@ public final class MyGameStateFactory implements Factory<GameState> {
 		private ImmutableSet<Move> moves;
 		private ImmutableSet<Piece> winner;
 		private Set<Piece> people; // i created it
-		int cnt = 0;
+		int cnt = 1;// by Eric
+
 
 		ImmutableList<Boolean> rounds = ImmutableList.of(false, false, true, false, false, false, false, true,
 				false, false, false, false, true, false, false, false, false, true, false, false, false, false, false, true);
@@ -106,16 +107,15 @@ public final class MyGameStateFactory implements Factory<GameState> {
 		@Nonnull
 		@Override
 		public ImmutableSet<Piece> getWinner() {
-			//this.winner = ImmutableSet.of();
-			//return this.winner;
-			if()
+			this.winner = ImmutableSet.of();
+			return this.winner;
 		}
 
 		@Nonnull
 		@Override
 		public ImmutableSet<Move> getAvailableMoves() {
 			ArrayList<Move> container = new ArrayList<>();
-			container.addAll(makeDoubleMoves(setup, detectives, mrX, mrX.location()));
+			if(cnt!=23)container.addAll(makeDoubleMoves(setup, detectives, mrX, mrX.location()));
 			container.addAll(makeSingleMoves(setup, detectives, mrX, mrX.location()));
 			// for (Player detective : detectives)
 			//	container.addAll(makeSingleMoves(setup, detectives, detective, detective.location()));
@@ -123,23 +123,41 @@ public final class MyGameStateFactory implements Factory<GameState> {
 			return moves;
 		}
 
+		//test
+		public void smsm(Boolean bl){bl = !bl;}
+
 		@Override public GameState advance(Move move) {
 			if(!moves.contains(move)) throw new IllegalArgumentException("Illegal move: "+move);
 
+
+			//Need to return for the Constructor
 			//	final GameSetup setup,
 			//	final ImmutableSet<Piece> remaining,
-			//	final ImmutableList<LogEntry> log,
+			//	Finished! final ImmutableList<LogEntry> log,
 			//	final Player mrX,
 			//	final List<Player> detectives)
-			List<LogEntry> iLog = new ArrayList<>();
-			iLog = log;
-			if(rounds.get(cnt).equals(false)) {
-				LogEntry result = new LogEntry(move.tickets().iterator().next(), -1);
 
+
+			//
+
+			// Travel Log
+			if(move.commencedBy().isMrX()){
+				var aLog = new ArrayList<LogEntry>();
+				aLog.addAll(this.log);
+				if(ScotlandYard.REVEAL_ROUND.contains(cnt)){
+					aLog.add(LogEntry.hidden(move.tickets().iterator().next()));
+				}
+				else if(!ScotlandYard.REVEAL_ROUND.contains(cnt)){
+					aLog.add(LogEntry.reveal(move.tickets().iterator().next(), mrX.location()));
+				}
+				cnt++;
+				this.log = ImmutableList.copyOf(aLog);
 			}
-			else if(rounds.get(cnt).equals(true)) {
-				LogEntry result = new LogEntry(move.tickets().iterator().next(), move.source());
-			}
+			//Travel Log ends
+
+
+
+
 
 			return null; }
 	}
