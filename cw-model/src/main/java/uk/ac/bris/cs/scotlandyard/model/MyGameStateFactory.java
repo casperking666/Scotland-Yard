@@ -123,8 +123,7 @@ public final class MyGameStateFactory implements Factory<GameState> {
 			return moves;
 		}
 
-		//test
-		public void smsm(Boolean bl){bl = !bl;}
+
 
 		@Override public GameState advance(Move move) {
 			if(!moves.contains(move)) throw new IllegalArgumentException("Illegal move: "+move);
@@ -138,7 +137,15 @@ public final class MyGameStateFactory implements Factory<GameState> {
 			//	final List<Player> detectives)
 
 
-			//
+			//Tickets used and handed
+			if(move.commencedBy().isDetective()){
+				for(int i = 0; i < detectives.size(); i++){
+					if(move.commencedBy().equals(detectives.get(i).piece())){
+						detectives.get(i).use(move.tickets().iterator().next());
+						mrX.give(move.tickets().iterator().next());
+					}
+				}
+			}
 
 			// Travel Log
 			if(move.commencedBy().isMrX()){
@@ -154,6 +161,7 @@ public final class MyGameStateFactory implements Factory<GameState> {
 				this.log = ImmutableList.copyOf(aLog);
 			}
 			//Travel Log ends
+
 
 
 
