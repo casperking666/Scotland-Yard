@@ -170,9 +170,6 @@ public final class MyGameStateFactory implements Factory<GameState> {
 				cnt++;
 				this.log = ImmutableList.copyOf(aLog);
 			}
-			if (remaining.contains(mrX.piece())) {
-
-			}
 			//Travel Log ends
 
 			// applied visitor pattern, taking out the destination as the new source
