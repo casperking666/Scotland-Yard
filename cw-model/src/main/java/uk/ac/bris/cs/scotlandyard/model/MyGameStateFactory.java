@@ -107,18 +107,38 @@ public final class MyGameStateFactory implements Factory<GameState> {
 		@Nonnull
 		@Override
 		public ImmutableSet<Piece> getWinner() {
-			this.winner = ImmutableSet.of();
-			return this.winner;
+			// Detectives win the game
+			for(Player test : detectives){
+				if(test.location() == mrX.location()){
+					var detectiveWinner = new HashSet<Piece>();
+					for(int i = 0; i < detectives.size(); i++){
+						detectiveWinner.add(detectives.get(i).piece());
+					}
+					return winner = ImmutableSet.copyOf(detectiveWinner);
+				}
+			}
+
+			// Mister X wins the game: All detectives can NO longer move the pieces.
+			for(Player cantMove : detectives){
+				// Need something about getAvailableMoves to report is empty!
+			}
+
+			//Mister X wins the game: MrX survives for 22 rounds (?which means cnt = 25 because there are 2 Double?)
+
+			if(cnt == 25){ // cnt=25 because the round 24 is only over when all detectives complete their moves!
+				return winner = ImmutableSet.of(mrX.piece());
+			}
+			return winner = ImmutableSet.of();
 		}
 
 		@Nonnull
 		@Override
 		public ImmutableSet<Move> getAvailableMoves() {
 			ArrayList<Move> container = new ArrayList<>();
-			if(cnt!=23)container.addAll(makeDoubleMoves(setup, detectives, mrX, mrX.location()));
+			container.addAll(makeDoubleMoves(setup, detectives, mrX, mrX.location()));
 			container.addAll(makeSingleMoves(setup, detectives, mrX, mrX.location()));
-			// for (Player detective : detectives)
-			//	container.addAll(makeSingleMoves(setup, detectives, detective, detective.location()));
+			for (Player detective : detectives)
+			container.addAll(makeSingleMoves(setup, detectives, detective, detective.location()));
 			moves = ImmutableSet.copyOf(container);
 			return moves;
 		}
