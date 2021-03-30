@@ -4,6 +4,8 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import java.util.*;
 import javax.annotation.Nonnull;
+import java.util.function.Function;
+
 import uk.ac.bris.cs.scotlandyard.model.Board.GameState;
 import uk.ac.bris.cs.scotlandyard.model.Move.*;
 import uk.ac.bris.cs.scotlandyard.model.Piece.*;
@@ -124,10 +126,16 @@ public final class MyGameStateFactory implements Factory<GameState> {
 		@Override
 		public ImmutableSet<Move> getAvailableMoves() {
 			ArrayList<Move> container = new ArrayList<>();
-			if(cnt!=23)container.addAll(makeDoubleMoves(setup, detectives, mrX, mrX.location()));
-			container.addAll(makeSingleMoves(setup, detectives, mrX, mrX.location()));
-			// for (Player detective : detectives)
-			//	container.addAll(makeSingleMoves(setup, detectives, detective, detective.location()));
+			if (remaining.contains(mrX.piece())) { // remaining works as a trigger to tell which one to deliver
+				if (setup.rounds.size() - log.size() > 1) {
+					container.addAll(makeDoubleMoves(setup, detectives, mrX, mrX.location()));
+				}
+				container.addAll(makeSingleMoves(setup, detectives, mrX, mrX.location()));
+			};
+			if (remaining.size() > 1) { // unfinished
+				for (Player detective : detectives)
+					container.addAll(makeSingleMoves(setup, detectives, detective, detective.location()));
+			}
 			moves = ImmutableSet.copyOf(container);
 			return moves;
 		}
@@ -162,13 +170,26 @@ public final class MyGameStateFactory implements Factory<GameState> {
 				cnt++;
 				this.log = ImmutableList.copyOf(aLog);
 			}
+			if (remaining.contains(mrX.piece())) {
+
+			}
 			//Travel Log ends
 
+			// applied visitor pattern, taking out the destination as the new source
+			Function<SingleMove, Integer> smf = x -> x.destination;
+			Function<DoubleMove, Integer> dmf = x -> x.destination2;
+			FunctionalVisitor<Integer> getDestination = new FunctionalVisitor<>(smf, dmf);
+			Integer destination = move.visit(getDestination);
 
+			// update remaining for my use
+			var container = new ArrayList<Piece>();
+			container.addAll(remaining);
+			if (move.commencedBy().isDetective())
+				container.add(move.commencedBy());
+			remaining = ImmutableSet.copyOf(container);
 
-
-
-			return null; }
+			return null;
+		}
 	}
 
 
@@ -208,7 +229,6 @@ public final class MyGameStateFactory implements Factory<GameState> {
 			int source) {
 		final var doubleMoves = new ArrayList<DoubleMove>();
 		if (!player.has(Ticket.DOUBLE)) return ImmutableSet.of();
-		// if (setup.rounds.get()); have to have a round number here
 		ImmutableSet<SingleMove> singleMoves = makeSingleMoves(setup, detectives, player, source);
 		for (SingleMove singleMove : singleMoves) {
 			Set<SingleMove> secondMoves = new HashSet<>();
