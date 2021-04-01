@@ -4,6 +4,8 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import java.util.*;
 import javax.annotation.Nonnull;
+import java.util.function.Function;
+
 import uk.ac.bris.cs.scotlandyard.model.Board.GameState;
 import uk.ac.bris.cs.scotlandyard.model.Move.*;
 import uk.ac.bris.cs.scotlandyard.model.Piece.*;
@@ -52,13 +54,22 @@ public final class MyGameStateFactory implements Factory<GameState> {
 		}
 
 		@Override
-		public ImmutableSet<Piece> getPlayers() { // I have no idea what I am doing but I get it.
-			this.people = new HashSet<>();
+		public ImmutableSet<Piece> getPlayers() {
+			/* this.people = new HashSet<>();
 			for (Player person : detectives)
 				this.people.add(person.piece());
 			this.people.add(mrX.piece());
 			ImmutableSet<Piece> people = ImmutableSet.copyOf(this.people);
-			return people;
+			return people;*/
+			ArrayList<Player> everyone = new ArrayList<>();
+			for (Player detective : detectives)
+				everyone.add(detective);
+			everyone.add(mrX);
+			this.everyone = ImmutableList.copyOf(everyone);
+			Set<Piece> people = new HashSet<>();
+			for (Player person : everyone)
+				people.add(person.piece());
+			return ImmutableSet.copyOf(people);
 		}
 
 		@Nonnull
@@ -107,43 +118,30 @@ public final class MyGameStateFactory implements Factory<GameState> {
 		@Nonnull
 		@Override
 		public ImmutableSet<Piece> getWinner() {
-			// Detectives win the game
-			for(Player test : detectives){
-				if(test.location() == mrX.location()){
-					var detectiveWinner = new HashSet<Piece>();
-					for(int i = 0; i < detectives.size(); i++){
-						detectiveWinner.add(detectives.get(i).piece());
-					}
-					return winner = ImmutableSet.copyOf(detectiveWinner);
-				}
-			}
-
-			// Mister X wins the game: All detectives can NO longer move the pieces.
-			for(Player cantMove : detectives){
-				// Need something about getAvailableMoves to report is empty!
-			}
-
-			//Mister X wins the game: MrX survives for 22 rounds (?which means cnt = 25 because there are 2 Double?)
-
-			if(cnt == 25){ // cnt=25 because the round 24 is only over when all detectives complete their moves!
-				return winner = ImmutableSet.of(mrX.piece());
-			}
-			return winner = ImmutableSet.of();
+			this.winner = ImmutableSet.of();
+			return this.winner;
 		}
 
 		@Nonnull
 		@Override
 		public ImmutableSet<Move> getAvailableMoves() {
 			ArrayList<Move> container = new ArrayList<>();
-			container.addAll(makeDoubleMoves(setup, detectives, mrX, mrX.location()));
-			container.addAll(makeSingleMoves(setup, detectives, mrX, mrX.location()));
-			for (Player detective : detectives)
-			container.addAll(makeSingleMoves(setup, detectives, detective, detective.location()));
+			if (remaining.contains(mrX.piece())) { // remaining works as a trigger to tell which one to deliver
+				if (setup.rounds.size() - log.size() > 1) {
+					container.addAll(makeDoubleMoves(setup, detectives, mrX, mrX.location()));
+				}
+				container.addAll(makeSingleMoves(setup, detectives, mrX, mrX.location()));
+			};
+			if (remaining.size() > 1) { // unfinished
+				for (Player detective : detectives)
+					container.addAll(makeSingleMoves(setup, detectives, detective, detective.location()));
+			}
 			moves = ImmutableSet.copyOf(container);
 			return moves;
 		}
 
-
+		//test
+		public void smsm(Boolean bl){bl = !bl;}
 
 		@Override public GameState advance(Move move) {
 			if(!moves.contains(move)) throw new IllegalArgumentException("Illegal move: "+move);
@@ -157,15 +155,7 @@ public final class MyGameStateFactory implements Factory<GameState> {
 			//	final List<Player> detectives)
 
 
-			//Tickets used and handed
-			if(move.commencedBy().isDetective()){
-				for(int i = 0; i < detectives.size(); i++){
-					if(move.commencedBy().equals(detectives.get(i).piece())){
-						detectives.get(i).use(move.tickets().iterator().next());
-						mrX.give(move.tickets().iterator().next());
-					}
-				}
-			}
+			//
 
 			// Travel Log
 			if(move.commencedBy().isMrX()){
@@ -182,12 +172,21 @@ public final class MyGameStateFactory implements Factory<GameState> {
 			}
 			//Travel Log ends
 
+			// applied visitor pattern, taking out the destination as the new source
+			Function<SingleMove, Integer> smf = x -> x.destination;
+			Function<DoubleMove, Integer> dmf = x -> x.destination2;
+			FunctionalVisitor<Integer> getDestination = new FunctionalVisitor<>(smf, dmf);
+			Integer destination = move.visit(getDestination);
 
+			// update remaining for my use
+			var container = new ArrayList<Piece>();
+			container.addAll(remaining);
+			if (move.commencedBy().isDetective())
+				container.add(move.commencedBy());
+			remaining = ImmutableSet.copyOf(container);
 
-
-
-
-			return null; }
+			return null;
+		}
 	}
 
 
@@ -227,7 +226,6 @@ public final class MyGameStateFactory implements Factory<GameState> {
 			int source) {
 		final var doubleMoves = new ArrayList<DoubleMove>();
 		if (!player.has(Ticket.DOUBLE)) return ImmutableSet.of();
-		// if (setup.rounds.get()); have to have a round number here
 		ImmutableSet<SingleMove> singleMoves = makeSingleMoves(setup, detectives, player, source);
 		for (SingleMove singleMove : singleMoves) {
 			Set<SingleMove> secondMoves = new HashSet<>();

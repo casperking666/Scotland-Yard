@@ -129,7 +129,7 @@ public class GameStateMrXAvailableMovesTest extends ParameterisedModelTestBase {
 				secret(MRX, 104, 116));
 	}
 
-	@Test public void testMrXNoDoubleMovesIfNotEnoughRoundLeft() {
+	@Test public void testMrXNoDoubleMovesIfNotEnoughRoundLeft() { /***/
 		var mrX = new Player(MRX, makeTickets(4, 3, 3, 2, 5), 104);
 		var blue = new Player(BLUE, defaultDetectiveTickets(), 117);
 
