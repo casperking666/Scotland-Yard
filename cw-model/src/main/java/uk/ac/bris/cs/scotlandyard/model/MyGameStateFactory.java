@@ -16,7 +16,7 @@ import uk.ac.bris.cs.scotlandyard.model.ScotlandYard.*;
  * Stage 1: Complete this class
  */
 public final class MyGameStateFactory implements Factory<GameState> {
-	int count = 1;
+	public int count = 0;
 	private final class MyGameState implements GameState {
 
 		private GameSetup setup;
@@ -29,10 +29,9 @@ public final class MyGameStateFactory implements Factory<GameState> {
 		private ImmutableSet<Piece> winner;
 		private Set<Piece> people; // i created it
 		int cnt = 1;// by Eric
+		int nt = 0;
 
 
-		ImmutableList<Boolean> rounds = ImmutableList.of(false, false, true, false, false, false, false, true,
-				false, false, false, false, true, false, false, false, false, true, false, false, false, false, false, true);
 
 		private MyGameState(
 				final GameSetup setup,
@@ -257,25 +256,25 @@ public final class MyGameStateFactory implements Factory<GameState> {
 				var aLog = new ArrayList<LogEntry>();
 				aLog.addAll(this.log);
 				if(move.visit(getSingleOrDouble).equals("SingleMove")) {
-					if(!setup.rounds.get(count)){
+					if(!setup.rounds.get(nt)){
 						aLog.add(LogEntry.hidden(move.visit(getTicket1)));
-					} else if(setup.rounds.get(count)){
+					} else if(setup.rounds.get(nt)){
 						aLog.add(LogEntry.reveal(move.visit(getTicket1), destination));
-					}count++;
+					}nt++;
 				}
 				else if(move.visit(getSingleOrDouble).equals("DoubleMove")){
 					//for the 1st move
-					if(!setup.rounds.get(count)){
+					if(!setup.rounds.get(nt)){
 						aLog.add(LogEntry.hidden(move.visit(getTicket1)));
-					} else if(setup.rounds.get(count)){
+					} else if(setup.rounds.get(nt)){
 						aLog.add(LogEntry.reveal(move.visit(getTicket1), destination1));
-					}count++;
+					}nt++;
 					//for the 2nd move
-					if(!setup.rounds.get(count)){
+					if(!setup.rounds.get(nt)){
 						aLog.add(LogEntry.hidden(move.visit(getTicket2)));
-					} else if(setup.rounds.get(count)) {
+					} else if(setup.rounds.get(nt)) {
 						aLog.add(LogEntry.reveal(move.visit(getTicket2), destination2));
-					}count++;
+					}nt++;
 				}
 				this.log = ImmutableList.copyOf(aLog);
 			}
