@@ -16,7 +16,7 @@ import uk.ac.bris.cs.scotlandyard.model.ScotlandYard.*;
  * Stage 1: Complete this class
  */
 public final class MyGameStateFactory implements Factory<GameState> {
-
+	int count = 1;
 	private final class MyGameState implements GameState {
 
 		private GameSetup setup;
@@ -176,44 +176,119 @@ public final class MyGameStateFactory implements Factory<GameState> {
 			//	final Player mrX,
 			//	final List<Player> detectives)
 
+			List<Player> newDetectives = new ArrayList<>();
+			newDetectives.addAll(detectives);
+
+			// applied visitor pattern, taking out the destination as the new source
+			Integer destination = null;
+			Integer destination1 = null;
+			Integer destination2 = null;
+
+			Function<SingleMove, String> sm = x -> "SingleMove";
+			Function<DoubleMove, String> dm = x -> "DoubleMove";
+			FunctionalVisitor<String> getSingleOrDouble = new FunctionalVisitor<>(sm, dm);
+
+			Function<SingleMove, Integer> smf1 = x -> x.destination;
+			Function<DoubleMove, Integer> dmf1 = x -> x.destination1;
+			FunctionalVisitor<Integer> getDestination = new FunctionalVisitor<>(smf1, dmf1);
+
+			Function<SingleMove, Integer> smf2 = x -> x.destination;
+			Function<DoubleMove, Integer> dmf2 = x -> x.destination2;
+			FunctionalVisitor<Integer> getDestination2 = new FunctionalVisitor<>(smf2, dmf2);
+
+			Function<SingleMove, Ticket> smt1 = x -> x.ticket;
+			Function<DoubleMove, Ticket> dmt1 = x -> x.ticket1;
+			FunctionalVisitor<Ticket> getTicket1 = new FunctionalVisitor<>(smt1, dmt1);
+
+
+			Function<SingleMove, Ticket> smt2 = x -> x.ticket;
+			Function<DoubleMove, Ticket> dmt2 = x -> x.ticket2;
+			FunctionalVisitor<Ticket> getTicket2 = new FunctionalVisitor<>(smt2, dmt2);
+			//Integer destination = move.visit(getDestination);
+			if(move.visit(getSingleOrDouble).equals("SingleMove")){
+				destination = move.visit(getDestination);
+			}
+			else if(move.visit(getSingleOrDouble).equals("DoubleMove")){
+				destination1 = move.visit(getDestination);
+				destination2 = move.visit(getDestination2);
+			}
+
 
 			// Tickets used and handed
 			if(move.commencedBy().isDetective()){
-				for(int i = 0; i < detectives.size(); i++){
-					if(move.commencedBy().equals(detectives.get(i).piece())){
-						detectives.get(i).use(move.tickets().iterator().next());
-						mrX.give(move.tickets().iterator().next());
+				for(int i = 0; i < newDetectives.size(); i++){
+					if(newDetectives.get(i).equals(move.commencedBy())){
+						newDetectives.set(i, newDetectives.get(i).use(move.visit(getTicket1)));
+						detectives = ImmutableList.copyOf(newDetectives);
+						mrX = mrX.give(move.visit(getTicket1));
 					}
 				}
 			}
+			else if(move.commencedBy().isMrX()){
+				if(move.visit(getSingleOrDouble).equals("SingleMove")){
+					mrX = mrX.use(move.visit(getTicket1));
+				} else if(move.visit(getSingleOrDouble).equals("DoubleMove")){
+					mrX = mrX.use(move.visit(getTicket1));
+					mrX = mrX.use(move.visit(getTicket2));
+				}
+			}
 			// End of Tickets used and handed
+
+			//Player locations
+			if(move.commencedBy().isMrX()){
+				if(move.visit(getSingleOrDouble).equals("SingleMove")){
+					mrX = mrX.at(destination);
+				} else if(move.visit(getSingleOrDouble).equals("DoubleMove")){
+					mrX = mrX.at(destination2);
+				}
+			}
+			else if(move.commencedBy().isDetective()){
+				for(int i = 0; i < newDetectives.size(); i++){
+					if(newDetectives.get(i).piece().equals(move.commencedBy())){
+						newDetectives.set(i, newDetectives.get(i).at(destination));
+						detectives = ImmutableList.copyOf(newDetectives);
+					}
+				}
+			}
+
 
 			// Travel Log
 			if(move.commencedBy().isMrX()){
 				var aLog = new ArrayList<LogEntry>();
 				aLog.addAll(this.log);
-				if(ScotlandYard.REVEAL_ROUND.contains(cnt)){
-					aLog.add(LogEntry.hidden(move.tickets().iterator().next()));
+				if(move.visit(getSingleOrDouble).equals("SingleMove")) {
+					if(!setup.rounds.get(count)){
+						aLog.add(LogEntry.hidden(move.visit(getTicket1)));
+					} else if(setup.rounds.get(count)){
+						aLog.add(LogEntry.reveal(move.visit(getTicket1), destination));
+					}count++;
 				}
-				else if(!ScotlandYard.REVEAL_ROUND.contains(cnt)){
-					aLog.add(LogEntry.reveal(move.tickets().iterator().next(), mrX.location()));
+				else if(move.visit(getSingleOrDouble).equals("DoubleMove")){
+					//for the 1st move
+					if(!setup.rounds.get(count)){
+						aLog.add(LogEntry.hidden(move.visit(getTicket1)));
+					} else if(setup.rounds.get(count)){
+						aLog.add(LogEntry.reveal(move.visit(getTicket1), destination1));
+					}count++;
+					//for the 2nd move
+					if(!setup.rounds.get(count)){
+						aLog.add(LogEntry.hidden(move.visit(getTicket2)));
+					} else if(setup.rounds.get(count)) {
+						aLog.add(LogEntry.reveal(move.visit(getTicket2), destination2));
+					}count++;
 				}
-				cnt++;
 				this.log = ImmutableList.copyOf(aLog);
 			}
 			//Travel Log ends
 
-			// applied visitor pattern, taking out the destination as the new source
-			Function<SingleMove, Integer> smf = x -> x.destination;
-			Function<DoubleMove, Integer> dmf = x -> x.destination2;
-			FunctionalVisitor<Integer> getDestination = new FunctionalVisitor<>(smf, dmf);
-			Integer destination = move.visit(getDestination);
+
 
 			//Player locations
-			if(move.commencedBy().isMrX()){
+			//if(move.commencedBy().isMrX()){
 
-				mrX = mrX.at(destination);
-			}/*
+			//	mrX = mrX.at(destination);
+			//}
+			/*
 			else if(move.commencedBy().isDetective()){
 				for(int i = 0; i < detectives.size(); i++){
 					if(detectives.get(i).piece().equals(move.commencedBy())){
@@ -223,12 +298,13 @@ public final class MyGameStateFactory implements Factory<GameState> {
 				}
 			}*/
 			// 你上头写得这个有点小bug 我改了一下
-			else if (move.commencedBy().isDetective()) {
+			/*else if (move.commencedBy().isDetective()) {
 				for (Player detective : detectives) {
 					if (detective.piece().equals(move.commencedBy()))
 						detective.at(destination);
 				}
-			}
+			}*/
+
 			// might still have bugs, please don't change anything
 			var container = new ArrayList<Piece>();
 			container.addAll(remaining);
