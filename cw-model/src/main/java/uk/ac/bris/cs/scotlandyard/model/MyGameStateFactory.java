@@ -144,17 +144,20 @@ public final class MyGameStateFactory implements Factory<GameState> {
 
 		@Nonnull
 		@Override
-		public ImmutableSet<Move> getAvailableMoves() {
+		public ImmutableSet<Move> getAvailableMoves() { // still fixing
 			ArrayList<Move> container = new ArrayList<>();
-			if (remaining.contains(mrX.piece())) { // remaining works as a trigger to tell which one to deliver
+			if (remaining.isEmpty()) {
 				if (setup.rounds.size() - log.size() > 1) {
 					container.addAll(makeDoubleMoves(setup, detectives, mrX, mrX.location()));
 				}
 				container.addAll(makeSingleMoves(setup, detectives, mrX, mrX.location()));
-			};
-			if (remaining.size() > 1) { // unfinished
-				for (Player detective : detectives)
-					container.addAll(makeSingleMoves(setup, detectives, detective, detective.location()));
+				remaining = ImmutableSet.of(mrX.piece());
+			}
+			else if (remaining.size() > 0) {
+				for (Player detective : detectives) {
+					if (!remaining.contains(detective.piece()))
+						container.addAll(makeSingleMoves(setup, detectives, detective, detective.location()));
+				}
 			}
 			moves = ImmutableSet.copyOf(container);
 			return moves;
@@ -163,6 +166,7 @@ public final class MyGameStateFactory implements Factory<GameState> {
 
 
 		@Override public GameState advance(Move move) {
+			moves = getAvailableMoves(); // have to have this to make it work
 			if(!moves.contains(move)) throw new IllegalArgumentException("Illegal move: "+move);
 
 
@@ -210,7 +214,7 @@ public final class MyGameStateFactory implements Factory<GameState> {
 			if(move.commencedBy().isMrX()){
 
 				mrX = mrX.at(destination);
-			}
+			}/*
 			else if(move.commencedBy().isDetective()){
 				for(int i = 0; i < detectives.size(); i++){
 					if(detectives.get(i).piece().equals(move.commencedBy())){
@@ -218,13 +222,36 @@ public final class MyGameStateFactory implements Factory<GameState> {
 						detectives.remove(i+1);
 					}
 				}
+			}*/
+			// 你上头写得这个有点小bug 我改了一下
+			else if (move.commencedBy().isDetective()) {
+				for (Player detective : detectives) {
+					if (detective.piece().equals(move.commencedBy()))
+						detective.at(destination);
+				}
 			}
-
-			// update remaining for my use
+			// might still have bugs, please don't change anything
 			var container = new ArrayList<Piece>();
-			container.addAll(remaining);
+			container.addAll(remaining);/*
+			if (container.size() + 1 == getPlayers().size()) {
+				container.clear();
+			}
+			if (move.commencedBy().isMrX()) {
+				if (!remaining.isEmpty())
+					container.remove(MrX.MRX);
+				else container.add(MrX.MRX);
+			}
 			if (move.commencedBy().isDetective())
+				container.add(move.commencedBy());*/
+			if (container.size() == getPlayers().size()) {
+				container.clear();
+			}
+			else if (move.commencedBy().isMrX()) {
+				container.add(MrX.MRX);
+			}
+			else if (move.commencedBy().isDetective()) {
 				container.add(move.commencedBy());
+			}
 			remaining = ImmutableSet.copyOf(container);
 
 			GameState state = new MyGameState(this.setup, this.remaining, this.log, this.mrX, this.detectives);
@@ -313,7 +340,7 @@ public final class MyGameStateFactory implements Factory<GameState> {
 				throw new IllegalArgumentException();
 		if (setup.rounds.isEmpty()) throw new IllegalArgumentException("Rounds is empty!");
 		if (setup.graph.nodes().isEmpty()) throw new IllegalArgumentException();
-		return new MyGameState(setup, ImmutableSet.of(MrX.MRX), ImmutableList.of(), mrX, detectives);
+		return new MyGameState(setup, ImmutableSet.of(), ImmutableList.of(), mrX, detectives); // changed a bit
 	}
 
 }
