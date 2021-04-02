@@ -144,18 +144,17 @@ public final class MyGameStateFactory implements Factory<GameState> {
 
 		@Nonnull
 		@Override
-		public ImmutableSet<Move> getAvailableMoves() { // still fixing
+		public ImmutableSet<Move> getAvailableMoves() {
 			ArrayList<Move> container = new ArrayList<>();
-			if (remaining.isEmpty()) {
+			if (remaining.contains(mrX.piece())) {
 				if (setup.rounds.size() - log.size() > 1) {
 					container.addAll(makeDoubleMoves(setup, detectives, mrX, mrX.location()));
 				}
 				container.addAll(makeSingleMoves(setup, detectives, mrX, mrX.location()));
-				remaining = ImmutableSet.of(mrX.piece());
 			}
-			else if (remaining.size() > 0) {
+			else {
 				for (Player detective : detectives) {
-					if (!remaining.contains(detective.piece()))
+					if (remaining.contains(detective.piece()))
 						container.addAll(makeSingleMoves(setup, detectives, detective, detective.location()));
 				}
 			}
@@ -232,25 +231,18 @@ public final class MyGameStateFactory implements Factory<GameState> {
 			}
 			// might still have bugs, please don't change anything
 			var container = new ArrayList<Piece>();
-			container.addAll(remaining);/*
-			if (container.size() + 1 == getPlayers().size()) {
-				container.clear();
-			}
+			container.addAll(remaining);
 			if (move.commencedBy().isMrX()) {
-				if (!remaining.isEmpty())
-					container.remove(MrX.MRX);
-				else container.add(MrX.MRX);
+				container.remove(MrX.MRX);
+				for (Player detective : detectives) {
+					container.add(detective.piece());
+				}
 			}
-			if (move.commencedBy().isDetective())
-				container.add(move.commencedBy());*/
-			if (container.size() == getPlayers().size()) {
-				container.clear();
+			if (move.commencedBy().isDetective()) {
+				container.remove(move.commencedBy());
 			}
-			else if (move.commencedBy().isMrX()) {
+			if (container.isEmpty()) {
 				container.add(MrX.MRX);
-			}
-			else if (move.commencedBy().isDetective()) {
-				container.add(move.commencedBy());
 			}
 			remaining = ImmutableSet.copyOf(container);
 
@@ -340,7 +332,7 @@ public final class MyGameStateFactory implements Factory<GameState> {
 				throw new IllegalArgumentException();
 		if (setup.rounds.isEmpty()) throw new IllegalArgumentException("Rounds is empty!");
 		if (setup.graph.nodes().isEmpty()) throw new IllegalArgumentException();
-		return new MyGameState(setup, ImmutableSet.of(), ImmutableList.of(), mrX, detectives); // changed a bit
+		return new MyGameState(setup, ImmutableSet.of(MrX.MRX), ImmutableList.of(), mrX, detectives);
 	}
 
 }
