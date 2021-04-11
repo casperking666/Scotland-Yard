@@ -216,7 +216,7 @@ public final class MyGameStateFactory implements Factory<GameState> {
 			// Tickets used and handed
 			if(move.commencedBy().isDetective()){
 				for(int i = 0; i < newDetectives.size(); i++){
-					if(newDetectives.get(i).equals(move.commencedBy())){
+					if(newDetectives.get(i).piece().equals(move.commencedBy())){
 						newDetectives.set(i, newDetectives.get(i).use(move.visit(getTicket1)));
 						detectives = ImmutableList.copyOf(newDetectives);
 						mrX = mrX.give(move.visit(getTicket1));
@@ -227,6 +227,7 @@ public final class MyGameStateFactory implements Factory<GameState> {
 				if(move.visit(getSingleOrDouble).equals("SingleMove")){
 					mrX = mrX.use(move.visit(getTicket1));
 				} else if(move.visit(getSingleOrDouble).equals("DoubleMove")){
+					mrX = mrX.use(Ticket.DOUBLE);
 					mrX = mrX.use(move.visit(getTicket1));
 					mrX = mrX.use(move.visit(getTicket2));
 				}
