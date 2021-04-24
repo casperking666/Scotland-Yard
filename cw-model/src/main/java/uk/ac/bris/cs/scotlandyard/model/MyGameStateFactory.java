@@ -44,6 +44,7 @@ public final class MyGameStateFactory implements Factory<GameState> {
 			this.log = log;
 			this.mrX = mrX;
 			this.detectives = detectives;
+			this.winner = ImmutableSet.of();// new addition
 		}
 
 
@@ -127,15 +128,36 @@ public final class MyGameStateFactory implements Factory<GameState> {
 					return winner = ImmutableSet.copyOf(detectiveWinner);
 				}
 			}
-			// Mister X wins the game: All detectives can NO longer move the pieces.
-			Boolean detectivesCantMove = false;
-			for(int i = 0; i < detectives.size(); i++){
-				//needed something about AvailableMoves of All Detectives are empty!
+			// Detectives win the game : MrX cant move
+			ArrayList<Move> Xcontainer = new ArrayList<>();
+			if (setup.rounds.size() - log.size() > 1) {
+				Xcontainer.addAll(makeDoubleMoves(setup, detectives, mrX, mrX.location()));
+			}
+			Xcontainer.addAll(makeSingleMoves(setup, detectives, mrX, mrX.location()));
+			if(Xcontainer.isEmpty()) {
+				for(Player test : detectives) {
+					var detectiveWinner = new HashSet<Piece>();
+					for(int i = 0; i < detectives.size(); i++){
+						detectiveWinner.add(detectives.get(i).piece());
+					}
+					return winner = ImmutableSet.copyOf(detectiveWinner);
+				}
 			}
 
-			//Mister X wins the game: MrX survives for 22 rounds (?which means cnt = 25 because there are 2 Double?)
+			// Mister X wins the game: All detectives can NO longer move the pieces.
+			Boolean detectivesCantMove = false;
+			ArrayList<Move> container = new ArrayList<>();
+			for(Player detective : detectives) {
+				container.addAll(makeSingleMoves(setup, detectives, detective, detective.location()));
+			}
+			if(container.isEmpty()) {
+				return winner = ImmutableSet.of(mrX.piece());
+			}
 
-			if(cnt == 25){ // cnt=25 because the round 24 is only over when all detectives complete their moves!
+
+
+			//Mister X wins the game: MrX survives for 22 rounds (?which means cnt = 25 because there are 2 Double?)
+			if(setup.rounds.size() == this.log.size()) {
 				return winner = ImmutableSet.of(mrX.piece());
 			}
 			return winner = ImmutableSet.of();
@@ -158,6 +180,17 @@ public final class MyGameStateFactory implements Factory<GameState> {
 				}
 			}
 			moves = ImmutableSet.copyOf(container);
+			if(moves.isEmpty()) {
+				ArrayList<Move> Xcontainer = new ArrayList<>();
+				if(setup.rounds.size() - log.size() > 1) {
+					Xcontainer.addAll(makeDoubleMoves(setup, detectives, mrX, mrX.location()));
+				}
+				Xcontainer.addAll(makeSingleMoves(setup, detectives, mrX, mrX.location()));
+				moves = ImmutableSet.copyOf(Xcontainer);
+			}
+
+			if(!winner.isEmpty()) return ImmutableSet.of();
+
 			return moves;
 		}
 
@@ -327,6 +360,7 @@ public final class MyGameStateFactory implements Factory<GameState> {
 			remaining = ImmutableSet.copyOf(container);
 
 			GameState state = new MyGameState(this.setup, this.remaining, this.log, this.mrX, this.detectives);
+
 
 			return state;
 		}
