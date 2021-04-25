@@ -21,9 +21,6 @@ public final class MyModelFactory implements Factory<Model> {
 		private GameSetup setup;
 		private Player mrX;
 		private List<Player> detectives;
-		private ImmutableList<Player> everyone;
-		private ImmutableSet<Move> moves;
-		private ImmutableSet<Piece> winner;
 		private List<Observer> observers;
 		private Board.GameState gameState;
 
@@ -37,7 +34,6 @@ public final class MyModelFactory implements Factory<Model> {
 			this.observers = new ArrayList<>();
 			this.gameState = new MyGameStateFactory().build(setup, mrX, ImmutableList.copyOf(detectives));
 		}
-
 
 		@Nonnull
 		@Override
@@ -87,8 +83,6 @@ public final class MyModelFactory implements Factory<Model> {
 	                                      ImmutableList<Player> detectives) {
 		return new MyModel(setup, mrX, detectives);
 	}
-
-
 
 
 }
