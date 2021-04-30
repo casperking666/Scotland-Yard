@@ -143,7 +143,9 @@ public final class MyGameStateFactory implements Factory<GameState> {
 			}
 
 			//Mister X wins the game: MrX survives for 22 rounds (?which means cnt = 25 because there are 2 Double?)
-			if(setup.rounds.size() == this.log.size()) {
+			Boolean MrXinContainer = false;
+			if(remaining.contains(MrX.MRX)) MrXinContainer = true;
+			if(setup.rounds.size() == this.log.size() && MrXinContainer) {
 				return winner = ImmutableSet.of(mrX.piece());
 			}
 			return winner = ImmutableSet.of();
@@ -171,14 +173,6 @@ public final class MyGameStateFactory implements Factory<GameState> {
 				}
 			}
 			moves = ImmutableSet.copyOf(container);
-			if (moves.isEmpty()) {
-				ArrayList<Move> Xcontainer = new ArrayList<>();
-				if(setup.rounds.size() - log.size() > 1) {
-					Xcontainer.addAll(makeDoubleMoves(setup, detectives, mrX, mrX.location()));
-				}
-				Xcontainer.addAll(makeSingleMoves(setup, detectives, mrX, mrX.location()));
-				moves = ImmutableSet.copyOf(Xcontainer);
-			}
 			return moves;
 		}
 
@@ -292,6 +286,11 @@ public final class MyGameStateFactory implements Factory<GameState> {
 				container.remove(MrX.MRX);
 				for (Player detective : detectives)
 					container.add(detective.piece());
+			}
+			for(Player detective : detectives) {
+				if(makeSingleMoves(setup, detectives, detective, detective.location()).isEmpty()) {
+					container.remove(detective.piece());
+				}
 			}
 			if (move.commencedBy().isDetective()) {
 				container.remove(move.commencedBy());
