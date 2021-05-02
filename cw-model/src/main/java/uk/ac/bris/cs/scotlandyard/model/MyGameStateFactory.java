@@ -105,7 +105,7 @@ public final class MyGameStateFactory implements Factory<GameState> {
 		@Nonnull
 		@Override
 		public ImmutableSet<Piece> getWinner() {
-			// Detectives win the game
+			// Detectives win - if any detective is at MrX position
 			for(Player test : detectives){
 				if(test.location() == mrX.location()){
 					var detectiveWinner = new HashSet<Piece>();
@@ -115,14 +115,13 @@ public final class MyGameStateFactory implements Factory<GameState> {
 					return winner = ImmutableSet.copyOf(detectiveWinner);
 				}
 			}
-
-			// Detectives win the game : MrX cant move
-			ArrayList<Move> Xcontainer = new ArrayList<>();
+			// Detectives win - MrX cant move
+			ArrayList<Move> mrXAvailableMoves = new ArrayList<>();
 			if (setup.rounds.size() - log.size() > 1) {
-				Xcontainer.addAll(makeDoubleMoves(setup, detectives, mrX, mrX.location()));
+				mrXAvailableMoves.addAll(makeDoubleMoves(setup, detectives, mrX, mrX.location()));
 			}
-			Xcontainer.addAll(makeSingleMoves(setup, detectives, mrX, mrX.location()));
-			if(Xcontainer.isEmpty()) {
+			mrXAvailableMoves.addAll(makeSingleMoves(setup, detectives, mrX, mrX.location()));
+			if(mrXAvailableMoves.isEmpty()) {
 				for(Player test : detectives) {
 					var detectiveWinner = new HashSet<Piece>();
 					for(int i = 0; i < detectives.size(); i++){
@@ -131,8 +130,7 @@ public final class MyGameStateFactory implements Factory<GameState> {
 					return winner = ImmutableSet.copyOf(detectiveWinner);
 				}
 			}
-
-			// Mister X wins the game: All detectives can NO longer move the pieces.
+			// Mister X win - All detectives can NO longer move the pieces.
 			Boolean detectivesCantMove = false;
 			ArrayList<Move> container = new ArrayList<>();
 			for(Player detective : detectives) {
@@ -141,9 +139,10 @@ public final class MyGameStateFactory implements Factory<GameState> {
 			if(container.isEmpty()) {
 				return winner = ImmutableSet.of(mrX.piece());
 			}
-
-			//Mister X wins the game: MrX survives for 22 rounds (?which means cnt = 25 because there are 2 Double?)
-			if(setup.rounds.size() == this.log.size()) {
+			//Mister X win - MrX survives until the final round
+			Boolean MrXinContainer = false;
+			if(remaining.contains(MrX.MRX)) MrXinContainer = true;
+			if(setup.rounds.size() == this.log.size() && MrXinContainer) {
 				return winner = ImmutableSet.of(mrX.piece());
 			}
 			return winner = ImmutableSet.of();
@@ -172,14 +171,6 @@ public final class MyGameStateFactory implements Factory<GameState> {
 				}
 			}
 			moves = ImmutableSet.copyOf(container);
-			if (moves.isEmpty()) {
-				ArrayList<Move> Xcontainer = new ArrayList<>();
-				if(setup.rounds.size() - log.size() > 1) {
-					Xcontainer.addAll(makeDoubleMoves(setup, detectives, mrX, mrX.location()));
-				}
-				Xcontainer.addAll(makeSingleMoves(setup, detectives, mrX, mrX.location()));
-				moves = ImmutableSet.copyOf(Xcontainer);
-			}
 			return moves;
 		}
 
@@ -221,7 +212,6 @@ public final class MyGameStateFactory implements Factory<GameState> {
 				destination1 = move.visit(getDestination);
 				destination2 = move.visit(getDestination2);
 			}
-
 
 			// Tickets used and handed
 			if(move.commencedBy().isDetective()){
@@ -286,13 +276,19 @@ public final class MyGameStateFactory implements Factory<GameState> {
 				}
 				this.log = ImmutableList.copyOf(tempLog);
 			}
-
+			//remaining update
 			var container = new ArrayList<Piece>();
 			container.addAll(remaining);
 			if (move.commencedBy().isMrX()) {
 				container.remove(MrX.MRX);
 				for (Player detective : detectives)
 					container.add(detective.piece());
+			}
+			// if one detective can NOT make any move, it will be removed.
+			for(Player detective : detectives) {
+				if(makeSingleMoves(setup, detectives, detective, detective.location()).isEmpty()) {
+					container.remove(detective.piece());
+				}
 			}
 			if (move.commencedBy().isDetective()) {
 				container.remove(move.commencedBy());
@@ -301,6 +297,7 @@ public final class MyGameStateFactory implements Factory<GameState> {
 				container.add(MrX.MRX);
 			}
 			remaining = ImmutableSet.copyOf(container);
+			//end of remaining update
 
 			return new MyGameState(this.setup, this.remaining, this.log, this.mrX, this.detectives);
 		}
