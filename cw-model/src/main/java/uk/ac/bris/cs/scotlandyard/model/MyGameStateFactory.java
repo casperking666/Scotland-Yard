@@ -155,6 +155,7 @@ public final class MyGameStateFactory implements Factory<GameState> {
 			else return ImmutableSet.copyOf(getAvailableMovesHelper());
 		}
 
+		// a delegate to the getAvailableMoves method
 		public ImmutableSet<Move> getAvailableMovesHelper() {
 			ArrayList<Move> container = new ArrayList<>();
 			if (remaining.contains(mrX.piece())) {
@@ -302,7 +303,8 @@ public final class MyGameStateFactory implements Factory<GameState> {
 		}
 	}
 
-
+	// helper method for getAvailableMoves, return all the possible singleMoves a player can make at his current location.
+	// prohibit the situations where players overlap at the same position or the player doesn't have the required tickets.
 	private static ImmutableSet<SingleMove> makeSingleMoves(
 			GameSetup setup,
 			List<Player> detectives,
@@ -310,11 +312,9 @@ public final class MyGameStateFactory implements Factory<GameState> {
 			int source) {
 		final var singleMoves = new ArrayList<SingleMove>();
 		for (int destination : setup.graph.adjacentNodes(source)) {
-			boolean isAvailable = true;
+			boolean isAvailable = true; // acts as a switch to make sure the player doesn't stumble into an occupied area.
 			for (Player detective : detectives) {
-				if (destination == detective.location()) {
-					isAvailable = false;
-				}
+				if (destination == detective.location()) isAvailable = false;
 			}
 			if (isAvailable)
 				for (Transport t : setup.graph.edgeValueOrDefault(source, destination, ImmutableSet.of())) {
@@ -331,7 +331,8 @@ public final class MyGameStateFactory implements Factory<GameState> {
 		return ImmutableSet.copyOf(singleMoves);
 	}
 
-
+	// helper method for getAvailableMoves, return all the doubleMoves MrX can make at his current location.
+	// the idea is to call the makeSingleMoves method twice
 	private static ImmutableSet<DoubleMove> makeDoubleMoves(
 			GameSetup setup,
 			List<Player> detectives,
@@ -359,6 +360,7 @@ public final class MyGameStateFactory implements Factory<GameState> {
 	}
 
 
+	// Providing checks to the arguments passed in. Making sure that no arguments point to null.
 	@Nonnull @Override public GameState build(
 			GameSetup setup,
 			Player mrX,
