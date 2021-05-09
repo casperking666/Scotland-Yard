@@ -50,14 +50,14 @@ public final class MyGameStateFactory implements Factory<GameState> {
 			return this.setup;
 		}
 
+		// return all the players
 		@Override
 		public ImmutableSet<Piece> getPlayers() {
 			this.people = new HashSet<>();
 			for (Player person : detectives)
 				this.people.add(person.piece());
 			this.people.add(mrX.piece());
-			ImmutableSet<Piece> people = ImmutableSet.copyOf(this.people);
-			return people;
+			return ImmutableSet.copyOf(this.people);
 		}
 
 		@Nonnull
@@ -148,18 +148,13 @@ public final class MyGameStateFactory implements Factory<GameState> {
 			return winner = ImmutableSet.of();
 		}
 
+		// Depends on what remaining contains, return the availableMoves of a specific player or players.
 		@Nonnull
 		@Override
 		public ImmutableSet<Move> getAvailableMoves() {
-			if (!winner.isEmpty()) return ImmutableSet.of();
-			else return ImmutableSet.copyOf(getAvailableMovesHelper());
-		}
-
-		// a delegate to the getAvailableMoves method
-		public ImmutableSet<Move> getAvailableMovesHelper() {
 			ArrayList<Move> container = new ArrayList<>();
 			if (remaining.contains(mrX.piece())) {
-				if (setup.rounds.size() - log.size() > 1) {
+				if (setup.rounds.size() - log.size() > 1) { // Has to have at least 2 rounds to makeDoubleMoves.
 					container.addAll(makeDoubleMoves(setup, detectives, mrX, mrX.location()));
 				}
 				container.addAll(makeSingleMoves(setup, detectives, mrX, mrX.location()));
@@ -171,12 +166,13 @@ public final class MyGameStateFactory implements Factory<GameState> {
 				}
 			}
 			moves = ImmutableSet.copyOf(container);
-			return moves;
+			if (!winner.isEmpty()) return ImmutableSet.of(); // To make this method mutually exclusive with getWinner.
+			else return moves;
 		}
 
 
 		@Override public GameState advance(Move move) {
-			moves = getAvailableMovesHelper(); // called here so it's initialized
+			moves = getAvailableMoves(); // called here so it's initialized
 			if(!moves.contains(move)) throw new IllegalArgumentException("Illegal move: "+move);
 
 			List<Player> newDetectives = new ArrayList<>();
@@ -266,13 +262,13 @@ public final class MyGameStateFactory implements Factory<GameState> {
 					if (setup.rounds.get(size)) {
 						tempLog.add(LogEntry.reveal(move.visit(getTicket1), destination1));
 					}
-					else {tempLog.add(LogEntry.hidden(move.visit(getTicket1)));}
+					else tempLog.add(LogEntry.hidden(move.visit(getTicket1)));
 					// size is 1 bigger because the log size won't be updated here, but since we just add
 					// another logEntry above, the size hence should add 1 to it.
 					if (setup.rounds.get(size + 1)) {
 						tempLog.add(LogEntry.reveal(move.visit(getTicket2), destination2));
 					}
-					else {tempLog.add(LogEntry.hidden(move.visit(getTicket2)));}
+					else tempLog.add(LogEntry.hidden(move.visit(getTicket2)));
 				}
 				this.log = ImmutableList.copyOf(tempLog);
 			}
@@ -303,8 +299,8 @@ public final class MyGameStateFactory implements Factory<GameState> {
 		}
 	}
 
-	// helper method for getAvailableMoves, return all the possible singleMoves a player can make at his current location.
-	// prohibit the situations where players overlap at the same position or the player doesn't have the required tickets.
+	// Helper method for getAvailableMoves, return all the possible singleMoves a player can make at his current location.
+	// Prohibit the situations where players overlap at the same position or the player doesn't have the required tickets.
 	private static ImmutableSet<SingleMove> makeSingleMoves(
 			GameSetup setup,
 			List<Player> detectives,
@@ -331,8 +327,8 @@ public final class MyGameStateFactory implements Factory<GameState> {
 		return ImmutableSet.copyOf(singleMoves);
 	}
 
-	// helper method for getAvailableMoves, return all the doubleMoves MrX can make at his current location.
-	// the idea is to call the makeSingleMoves method twice
+	// Helper method for getAvailableMoves, return all the doubleMoves MrX can make at his current location.
+	// The idea is to call makeSingleMoves method twice and combine them into a DoubleMove.
 	private static ImmutableSet<DoubleMove> makeDoubleMoves(
 			GameSetup setup,
 			List<Player> detectives,
@@ -344,13 +340,14 @@ public final class MyGameStateFactory implements Factory<GameState> {
 		for (SingleMove singleMove : singleMoves) {
 			Set<SingleMove> secondMoves = new HashSet<>();
 			secondMoves.addAll(makeSingleMoves(setup, detectives, player.use(singleMove.ticket), singleMove.destination));
+			// To link a singleMove to it's corresponding secondMove, make sure there isn't any conflicts between the two.
 			for (SingleMove secondMove : secondMoves) {
 				DoubleMove doubleMove = new DoubleMove(
 						singleMove.commencedBy(),
 						singleMove.source(),
 						singleMove.ticket,
 						singleMove.destination,
-						secondMove.tickets().iterator().next(), //  haven't revise on this yet
+						secondMove.ticket,
 						secondMove.destination
 				);
 				doubleMoves.add(doubleMove);
@@ -386,5 +383,6 @@ public final class MyGameStateFactory implements Factory<GameState> {
 		if (setup.graph.nodes().isEmpty()) throw new IllegalArgumentException();
 		return new MyGameState(setup, ImmutableSet.of(MrX.MRX), ImmutableList.of(), mrX, detectives);
 	}
+
 
 }
