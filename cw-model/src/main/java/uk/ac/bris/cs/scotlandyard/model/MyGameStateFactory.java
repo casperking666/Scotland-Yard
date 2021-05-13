@@ -29,7 +29,6 @@ public final class MyGameStateFactory implements Factory<GameState> {
 		private ImmutableSet<Piece> winner;
 		private Set<Piece> people; // new addition
 
-
 		private MyGameState(
 				final GameSetup setup,
 				final ImmutableSet<Piece> remaining,
@@ -43,7 +42,6 @@ public final class MyGameStateFactory implements Factory<GameState> {
 			this.detectives = detectives;
 			this.winner = ImmutableSet.of();// Initialisation of winner
 		}
-
 
 		@Override
 		public GameSetup getSetup() {
@@ -174,7 +172,6 @@ public final class MyGameStateFactory implements Factory<GameState> {
 			moves = ImmutableSet.copyOf(container);
 			return moves;
 		}
-
 
 		@Override public GameState advance(Move move) {
 			moves = getAvailableMovesHelper(); // called here so it's initialized
@@ -362,7 +359,6 @@ public final class MyGameStateFactory implements Factory<GameState> {
 		return ImmutableSet.copyOf(doubleMoves);
 	}
 
-
 	// Providing checks to the arguments passed in. Making sure that no arguments point to null.
 	@Nonnull @Override public GameState build(
 			GameSetup setup,
@@ -389,5 +385,4 @@ public final class MyGameStateFactory implements Factory<GameState> {
 		if (setup.graph.nodes().isEmpty()) throw new IllegalArgumentException();
 		return new MyGameState(setup, ImmutableSet.of(MrX.MRX), ImmutableList.of(), mrX, detectives);
 	}
-
 }
