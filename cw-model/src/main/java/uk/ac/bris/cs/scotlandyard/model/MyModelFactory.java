@@ -18,19 +18,13 @@ public final class MyModelFactory implements Factory<Model> {
 
 	private final class MyModel implements Model {
 
-		private GameSetup setup;
-		private Player mrX;
-		private List<Player> detectives;
-		private List<Observer> observers;
-		private Board.GameState gameState;
+		private final List<Observer> observers;
+		private final Board.GameState gameState;
 
 		private MyModel(
 				final GameSetup setup,
 				final Player mrX,
 				final List<Player> detectives) {
-			this.setup = setup;
-			this.mrX = mrX;
-			this.detectives = detectives;
 			this.observers = new ArrayList<>();
 			this.gameState = new MyGameStateFactory().build(setup, mrX, ImmutableList.copyOf(detectives));
 		}
@@ -53,7 +47,7 @@ public final class MyModelFactory implements Factory<Model> {
 		@Override
 		public void unregisterObserver(@Nonnull Observer observer) {
 			if (observer == null) throw new NullPointerException();
-			boolean isAvailable = false; // want to compare with the previous one later
+			boolean isAvailable = false;
 			for (Observer singleObserver : observers)
 				if (singleObserver.equals(observer)) isAvailable = true;
 			if (isAvailable)
@@ -67,6 +61,8 @@ public final class MyModelFactory implements Factory<Model> {
 			return ImmutableSet.copyOf(observers);
 		}
 
+
+		// Inform all the observers the state change when the current move has been made.
 		@Override
 		public void chooseMove(@Nonnull Move move) {
 			gameState.advance(move);
